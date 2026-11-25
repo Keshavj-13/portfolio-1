@@ -265,25 +265,35 @@ function selectTeamMember(memberId) {
     if (memberId === 'sandeep') {
       linkEl.href = "javascript:void(0)";
       linkEl.setAttribute('onclick', 'openAboutModal()');
+      linkEl.removeAttribute('target');
+      linkEl.removeAttribute('rel');
       linkEl.textContent = "View Full Profile & CV";
       linkEl.style.display = "inline-block";
     } else if (memberId === 'keshav') {
       linkEl.href = "javascript:void(0)";
       linkEl.setAttribute('onclick', 'openKeshavModal()');
+      linkEl.removeAttribute('target');
+      linkEl.removeAttribute('rel');
       linkEl.textContent = "View Full Profile & CV";
       linkEl.style.display = "inline-block";
     } else if (memberId === 'neeraj') {
       linkEl.href = "https://med.thapar.edu/facultydetails/MTE3OQ==";
+      linkEl.target = "_blank";
+      linkEl.rel = "noopener";
       linkEl.removeAttribute('onclick');
       linkEl.textContent = "Institute Faculty Profile";
       linkEl.style.display = "inline-block";
     } else if (memberId === 'jainy') {
       linkEl.href = "https://eied.thapar.edu/facultydetails/MTEwNw==";
+      linkEl.target = "_blank";
+      linkEl.rel = "noopener";
       linkEl.removeAttribute('onclick');
       linkEl.textContent = "Institute Faculty Profile";
       linkEl.style.display = "inline-block";
     } else if (memberId === 'pramod') {
       linkEl.href = "https://pgimer.edu.in/PGIMER_PORTAL/PGIMERPORTAL/Department/Global/JSP/empview.jsp?id=1041";
+      linkEl.target = "_blank";
+      linkEl.rel = "noopener";
       linkEl.removeAttribute('onclick');
       linkEl.textContent = "Institute Faculty Profile";
       linkEl.style.display = "inline-block";
@@ -292,6 +302,7 @@ function selectTeamMember(memberId) {
       linkEl.removeAttribute('onclick');
       linkEl.textContent = "View Scholar Profile";
       linkEl.target = "_blank";
+      linkEl.rel = "noopener";
       linkEl.style.display = "inline-block";
     } else {
       linkEl.style.display = "none";
@@ -305,7 +316,7 @@ function selectTeamMember(memberId) {
   });
 
   // Find the clicked button and add active class
-  var indexMap = { sandeep: 0, neeraj: 1, jainy: 2, pramod: 3, keshav: 4 };
+  var indexMap = { sandeep: 0, neeraj: 1, jainy: 2, pramod: 3, keshav: 4, sudhar: 5 };
   var activeBtnIndex = indexMap[memberId];
   if (buttons[activeBtnIndex]) {
     buttons[activeBtnIndex].classList.add('active-member');
