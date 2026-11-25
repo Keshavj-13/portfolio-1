@@ -138,7 +138,7 @@ function switchIclTab(tabId) {
   
   document.getElementById('icl-tab-' + tabId).style.display = 'block';
 
-  var iclBtnRow = document.querySelectorAll('.tab-btn-row')[3];
+  var iclBtnRow = document.querySelectorAll('.tab-btn-row')[4];
   if (iclBtnRow) {
     var sectionBtns = iclBtnRow.querySelectorAll('.tab-btn');
     sectionBtns.forEach(function(btn, index) {
@@ -538,3 +538,19 @@ function openHighlightModal(element) {
   document.body.style.overflow = "hidden";
 }
 
+
+/**
+ * End-to-end MNP hyperthermia pipeline (Yunnan cases) tab switching
+ */
+function switchMnphTab(tabId) {
+  var tabs = ['detect', 'flow', 'plan', 'heat'];
+  tabs.forEach(function(t) {
+    document.getElementById('mnph-tab-' + t).style.display = (t === tabId) ? 'block' : 'none';
+  });
+  var row = document.getElementById('mnph-btn-row');
+  if (row) {
+    row.querySelectorAll('.tab-btn').forEach(function(btn, index) {
+      btn.classList.toggle('active-tab', tabs[index] === tabId);
+    });
+  }
+}

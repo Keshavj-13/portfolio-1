@@ -721,6 +721,115 @@
           </div>
         </section>
 
+        <!-- MODULE 3b: END-TO-END PATIENT-SPECIFIC MNP HYPERTHERMIA PIPELINE (YUNNAN DCE-MRI) -->
+        <section class="module-card" id="mnph-e2e-section">
+          <h3 class="module-title">End-to-End Patient-Specific MNP Hyperthermia Pipeline — Yunnan DCE-MRI Cases</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
+            A fully automatic pipeline from a breast DCE-MRI scan to a 60-minute magnetic nanoparticle hyperthermia
+            treatment simulation, built on our MEP 2023 reduced-dose protocol and IJNMBE 2025 arterial-flow model and
+            moved from COMSOL to our own GPU solvers. The BEAT-Net tumor mask (not the ground truth) drives every
+            downstream step. Five Yunnan cases (01, 03, 04, 05, 06; 896&times;896&times;120 voxels,
+            0.38&times;0.38&times;1.7&nbsp;mm, 5 contrast phases). Figures show case 03.
+          </p>
+
+          <div class="tab-btn-row" id="mnph-btn-row">
+            <button class="tab-btn active-tab" onclick="switchMnphTab('detect')">1. Tumor &amp; Vessels</button>
+            <button class="tab-btn" onclick="switchMnphTab('flow')">2. Blood Flow (CFD)</button>
+            <button class="tab-btn" onclick="switchMnphTab('plan')">3. Dose &amp; Needle Planning</button>
+            <button class="tab-btn" onclick="switchMnphTab('heat')">4. 60-min Hyperthermia</button>
+          </div>
+
+          <!-- Tab 1: Detection + vessels -->
+          <div id="mnph-tab-detect" class="scientific-fig-container">
+            <img class="scientific-fig-img" src="images/mnph_e2e_beatnet_case03.jpg"
+              alt="BEAT-Net tumor segmentation vs ground truth, case 03" loading="lazy" />
+            <div class="fig-label">Figure 3.3: BEAT-Net Tumor Detection on DCE-MRI (Case 03)</div>
+            <div class="fig-caption">3D FlexibleUNet (ResNet-50 encoder, scSE attention) on stacked phases P1&ndash;P5.
+              Blue = ground truth, red = BEAT-Net. Dice across the five cases: 95.0 / 76.7 / 88.9 / 72.6 / 90.1&nbsp;%.
+              These cases overlap the model's training split, so the Dice values are not external-test performance.</div>
+            <img class="scientific-fig-img" src="images/mnph_e2e_vessel_tree_case03.jpg" style="margin-top: 1rem;"
+              alt="Peritumoral vessel tree, case 03" loading="lazy" />
+            <div class="fig-label">Figure 3.4: Peritumoral Vessel Tree Reconstruction</div>
+            <div class="fig-caption">Early subtraction (P2&minus;P1), white top-hat, multiscale Jerman vesselness on
+              GPU, hysteresis, skeleton graph, gap bridging and minimal-path tracking, then per-branch validation (CNR,
+              FWHM diameter, length, tortuosity). Line width and colour show vessel diameter (1.4&ndash;3.8&nbsp;mm).
+              Vessels below ~1.5&nbsp;mm cannot be recovered from 1.7&nbsp;mm slices.</div>
+          </div>
+
+          <!-- Tab 2: Flow -->
+          <div id="mnph-tab-flow" class="scientific-fig-container" style="display: none;">
+            <img class="scientific-fig-img" src="images/mnph_e2e_flow_case03.jpg"
+              alt="Blood flow velocity and pressure in reconstructed vessels, case 03" loading="lazy" />
+            <div class="fig-label">Figure 3.5: Steady Blood Flow in Patient-Specific Vessels</div>
+            <div class="fig-caption">Incompressible Navier&ndash;Stokes on lumen voxels (0.25&nbsp;mm) with a
+              masked finite-volume GPU solver that enforces exact no-flux walls. Boundary conditions follow IJNMBE 2025
+              (inlet 0.5&nbsp;m/s, outlets 110&nbsp;mmHg). Verified against Hagen&ndash;Poiseuille in a 3&nbsp;mm tube
+              (pressure gradient ratio 1.016, entrance length 17.0 vs 17.3&nbsp;mm).</div>
+          </div>
+
+          <!-- Tab 3: Dose and needle planning -->
+          <div id="mnph-tab-plan" class="scientific-fig-container" style="display: none;">
+            <img class="scientific-fig-img" src="images/mnph_e2e_needles_case03.jpg"
+              alt="Whole-breast needle trajectories, case 03" loading="lazy" />
+            <div class="fig-label">Figure 3.6: Automatic Vessel-Avoiding Needle Trajectories</div>
+            <div class="fig-caption">Every skin voxel is tested on the GPU as a straight-needle entry: length
+              &le;&nbsp;100&nbsp;mm, &ge;&nbsp;3&nbsp;mm clearance from all vessels and enhancing structures,
+              &le;&nbsp;60&deg; from the skin normal, no chest-wall approach. Skin is beige, tumor purple, vessels
+              red.</div>
+            <img class="scientific-fig-img" src="images/mnph_e2e_depots_case03.jpg" style="margin-top: 1rem;"
+              alt="Injection sites and MNP depots, case 03" loading="lazy" />
+            <div class="fig-label">Figure 3.7: Injection Sites, Tumor Shares and MNP Depots</div>
+            <div class="fig-caption">The reduced-dose protocol (MEP 2023) sets the total MNP mass from the tumor
+              volume. A Python port of our MATLAB planner places a deep site at the maximum inscribed sphere plus
+              peripheral sites, and each site's mass follows its share of the tumor.</div>
+            <table class="data-table">
+              <thead>
+                <tr><th>Case</th><th>Tumor (cm<sup>3</sup>)</th><th>RD (mg/cm<sup>3</sup>)</th><th>MNP (mg)</th><th>Sites</th><th>Needle depth (mm)</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>01</td><td>4.73</td><td>4.74</td><td>22.4</td><td>1</td><td>21.5</td></tr>
+                <tr><td>03</td><td>15.68</td><td>2.80</td><td>43.9</td><td>2</td><td>25.9 / 24.3</td></tr>
+                <tr><td>05</td><td>2.44</td><td>5.50</td><td>13.4</td><td>2</td><td>21.7 / 18.5</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Tab 4: Hyperthermia -->
+          <div id="mnph-tab-heat" class="scientific-fig-container" style="display: none;">
+            <img class="scientific-fig-img" src="images/mnph_e2e_hyperthermia_case03.jpg"
+              alt="60-minute MNP hyperthermia temperature fields and heating curves, case 03" loading="lazy" />
+            <div class="fig-label">Figure 3.8: 60-min Treatment Simulation With and Without Arterial Flow</div>
+            <div class="fig-caption">Pennes bioheat with blood convection in the computed lumens, an MNP heat source,
+              Arrhenius damage (&Omega;&nbsp;&ge;&nbsp;4.6) and damage-driven perfusion. Implicit finite volume,
+              0.25&nbsp;mm grid, FP64 BiCGSTAB with a custom CUDA kernel (0.19&nbsp;% error against the analytical
+              Pennes solution). This figure shows the first (v2) run; the table below gives the corrected results
+              after an independent audit of the parameters.</div>
+            <table class="data-table">
+              <thead>
+                <tr><th>Case (cm<sup>3</sup>)</th><th>Protocol</th><th>T<sub>max</sub> (&deg;C)</th><th>Tumor CD (%)</th><th>Healthy CD (cm<sup>3</sup>)</th></tr>
+              </thead>
+              <tbody>
+                <tr><td rowspan="2">01 (4.73)</td><td>IJNMBE 2025 Gaussian</td><td>82.7</td><td>90.3</td><td>0.66</td></tr>
+                <tr><td>MEP 2023 uniform</td><td>67.7</td><td>98.9</td><td>2.04</td></tr>
+                <tr><td rowspan="2">03 (15.68)</td><td>IJNMBE 2025 Gaussian</td><td>100.2</td><td>37.0</td><td>4.94</td></tr>
+                <tr><td>MEP 2023 uniform</td><td>61.2</td><td>62.9</td><td>2.17</td></tr>
+                <tr><td rowspan="2">04 (15.38)</td><td>IJNMBE 2025 Gaussian</td><td>98.3</td><td>58.6</td><td>2.29</td></tr>
+                <tr><td>MEP 2023 uniform</td><td>72.0</td><td>90.8</td><td>2.65</td></tr>
+                <tr><td rowspan="2">05 (2.44)</td><td>IJNMBE 2025 Gaussian</td><td>66.1</td><td>35.8</td><td>0.63</td></tr>
+                <tr><td>MEP 2023 uniform</td><td>52.9</td><td>58.7</td><td>0.45</td></tr>
+                <tr><td rowspan="2">06 (28.45)</td><td>IJNMBE 2025 Gaussian</td><td>106.7</td><td>64.6</td><td>3.83</td></tr>
+                <tr><td>MEP 2023 uniform</td><td>92.5</td><td>93.3</td><td>13.99</td></tr>
+              </tbody>
+            </table>
+            <div class="fig-label">Table 3.2: Corrected 60-min Outcomes for Five Yunnan Cases (with arterial flow)</div>
+            <div class="fig-caption">CD = complete thermal damage. Small tumors are covered well. Tumors larger than
+              ~15&nbsp;cm<sup>3</sup> need more than two injection sites or lower field power, because focal depots
+              overheat. Across these cases, peritumoral flow changed tumor damage by only +0.4&nbsp;pp on average
+              (not significant, n&nbsp;=&nbsp;5), since the needle-safe sites keep the heat 6&ndash;19&nbsp;mm away from
+              the reconstructed vessels. This is preclinical computational research with no patient outcomes yet.</div>
+          </div>
+        </section>
+
         <!-- MODULE 4: ICL PROJECT -->
         <section class="module-card">
           <h3 class="module-title">Urban Airflow &amp; Environmental Pollution Modelling (TIET-Imperial College)</h3>
